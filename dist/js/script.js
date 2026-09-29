@@ -100,29 +100,45 @@ const scrollLottie = new DotLottie({
 
 const menuFrameController = createFrameController(menuLottie, menuLottieCanvas);
 const scrollFrameController = createFrameController(scrollLottie, scrollLottieCanvas);
+const scrollLottieFrames = [0, 10, 20, 30, 40, 50, 65];
+const scrollLottieThresholds = [0, 0.1, 0.25, 0.4, 0.55, 0.7, 0.85];
+let menuLottieIsScrolled = false;
+let scrollLottieStage = 0;
 let scrollTicking = false;
 
-const getScrollLottieFrame = (progress) => {
-    if (progress <= 1 / 3) {
-        return progress * 30;
+const getScrollLottieStage = (progress) => {
+    for (let index = scrollLottieThresholds.length - 1; index >= 0; index -= 1) {
+        if (progress >= scrollLottieThresholds[index]) {
+            return index;
+        }
     }
 
-    if (progress <= 2 / 3) {
-        return 10 + ((progress - (1 / 3)) * 30);
-    }
-
-    return 20 + ((progress - (2 / 3)) * 45);
+    return 0;
 };
 
 const updateLottieFrames = () => {
-    const isAtTop = window.scrollY <= 1;
-    menuFrameController.animateTo(isAtTop ? 0 : 15);
+    const isScrolled = window.scrollY > 1;
+
+    if (isScrolled !== menuLottieIsScrolled) {
+        menuLottieIsScrolled = isScrolled;
+        menuFrameController.animateTo(isScrolled ? 15 : 0);
+    }
 
     const sectionTop = scrollLottieSection.getBoundingClientRect().top;
     const scrollDistance = Math.max(scrollLottieSection.offsetHeight - window.innerHeight, 1);
     const progress = Math.min(Math.max(-sectionTop / scrollDistance, 0), 1);
-    scrollFrameController.draw(getScrollLottieFrame(progress));
+    const nextStage = getScrollLottieStage(progress);
+
+    if (nextStage !== scrollLottieStage) {
+        scrollLottieStage = nextStage;
+        const targetFrame = scrollLottieFrames[scrollLottieStage];
+        const previousFrame = Number(scrollLottieCanvas.dataset.frame || 0);
+        const duration = Math.abs(targetFrame - previousFrame) > 10 ? 600 : 450;
+        scrollFrameController.animateTo(targetFrame, duration);
+    }
+
     scrollLottieSection.dataset.progress = progress.toFixed(3);
+    scrollLottieSection.dataset.stage = String(scrollLottieStage);
     scrollTicking = false;
 };
 
