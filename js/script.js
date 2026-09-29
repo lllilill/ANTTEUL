@@ -101,7 +101,7 @@ const scrollLottie = new DotLottie({
 const menuFrameController = createFrameController(menuLottie, menuLottieCanvas);
 const scrollFrameController = createFrameController(scrollLottie, scrollLottieCanvas);
 const scrollLottieFrames = [0, 10, 20, 30, 40, 50, 80];
-const scrollLottieThresholds = [0, 0.1, 0.25, 0.4, 0.55, 0.7, 0.85];
+const scrollLottieThresholds = [0, 0.08, 0.2, 0.32, 0.44, 0.56, 0.68];
 let menuLottieIsScrolled = false;
 let menuLottieHasScrolled = false;
 let scrollLottieStage = 0;
@@ -127,7 +127,7 @@ const updateLottieFrames = () => {
             menuLottieHasScrolled = true;
             menuFrameController.animateTo(15);
         } else if (menuLottieHasScrolled) {
-            menuFrameController.animateTo(20);
+            menuFrameController.animateTo(25);
         }
     }
 
