@@ -1,6 +1,13 @@
+import { DotLottie } from "./vendor/dotlottie-web.js";
+
 document.documentElement.classList.add("has-js");
 
+DotLottie.setWasmUrl("js/vendor/dotlottie-player.wasm");
+
 const header = document.querySelector("[data-header]");
+const menuLottieCanvas = document.querySelector("[data-menu-lottie]");
+const scrollLottieCanvas = document.querySelector("[data-scroll-lottie]");
+const scrollLottieSection = document.querySelector("[data-scroll-lottie-section]");
 const navToggle = document.querySelector(".nav-toggle");
 const mobileNav = document.querySelector(".mobile-nav");
 const filterButtons = document.querySelectorAll("[data-filter]");
@@ -15,6 +22,118 @@ const dialogImage = document.querySelector("[data-dialog-image]");
 const dialogTitle = document.querySelector("[data-dialog-title]");
 const dialogClose = document.querySelector("[data-dialog-close]");
 const selectedProducts = new Set();
+const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const createFrameController = (player, canvas, initialFrame = 0) => {
+    let currentFrame = initialFrame;
+    let targetFrame = initialFrame;
+    let animationFrameId = 0;
+    let isLoaded = false;
+
+    const draw = (frame) => {
+        currentFrame = frame;
+        const renderedFrame = Math.round(frame);
+        player.setFrame(renderedFrame);
+        canvas.dataset.frame = String(renderedFrame);
+    };
+
+    const animateTo = (frame, duration = 500) => {
+        targetFrame = frame;
+
+        if (!isLoaded) {
+            return;
+        }
+
+        window.cancelAnimationFrame(animationFrameId);
+
+        if (prefersReducedMotion || Math.abs(targetFrame - currentFrame) < 0.1) {
+            draw(targetFrame);
+            return;
+        }
+
+        const startFrame = currentFrame;
+        const startTime = performance.now();
+
+        const tick = (time) => {
+            const progress = Math.min((time - startTime) / duration, 1);
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+            draw(startFrame + ((targetFrame - startFrame) * easedProgress));
+
+            if (progress < 1) {
+                animationFrameId = window.requestAnimationFrame(tick);
+            }
+        };
+
+        animationFrameId = window.requestAnimationFrame(tick);
+    };
+
+    player.addEventListener("load", () => {
+        isLoaded = true;
+        draw(initialFrame);
+        animateTo(targetFrame);
+    });
+
+    return { animateTo, draw: (frame) => isLoaded && draw(frame) };
+};
+
+const menuLottie = new DotLottie({
+    autoplay: false,
+    loop: false,
+    canvas: menuLottieCanvas,
+    src: "lottie/menu.lottie",
+    renderConfig: {
+        autoResize: true,
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+    },
+});
+
+const scrollLottie = new DotLottie({
+    autoplay: false,
+    loop: false,
+    canvas: scrollLottieCanvas,
+    src: "lottie/scroll.lottie",
+    renderConfig: {
+        autoResize: true,
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+    },
+});
+
+const menuFrameController = createFrameController(menuLottie, menuLottieCanvas);
+const scrollFrameController = createFrameController(scrollLottie, scrollLottieCanvas);
+let scrollTicking = false;
+
+const getScrollLottieFrame = (progress) => {
+    if (progress <= 1 / 3) {
+        return progress * 30;
+    }
+
+    if (progress <= 2 / 3) {
+        return 10 + ((progress - (1 / 3)) * 30);
+    }
+
+    return 20 + ((progress - (2 / 3)) * 45);
+};
+
+const updateLottieFrames = () => {
+    const isAtTop = window.scrollY <= 1;
+    menuFrameController.animateTo(isAtTop ? 0 : 15);
+
+    const sectionTop = scrollLottieSection.getBoundingClientRect().top;
+    const scrollDistance = Math.max(scrollLottieSection.offsetHeight - window.innerHeight, 1);
+    const progress = Math.min(Math.max(-sectionTop / scrollDistance, 0), 1);
+    scrollFrameController.draw(getScrollLottieFrame(progress));
+    scrollLottieSection.dataset.progress = progress.toFixed(3);
+    scrollTicking = false;
+};
+
+const requestLottieUpdate = () => {
+    if (!scrollTicking) {
+        scrollTicking = true;
+        window.requestAnimationFrame(updateLottieFrames);
+    }
+};
+
+scrollLottie.addEventListener("load", requestLottieUpdate);
 
 const closeMenu = () => {
     navToggle.setAttribute("aria-expanded", "false");
@@ -27,8 +146,13 @@ const updateHeader = () => {
     header.classList.toggle("is-scrolled", window.scrollY > 8);
 };
 
-window.addEventListener("scroll", updateHeader, { passive: true });
+window.addEventListener("scroll", () => {
+    updateHeader();
+    requestLottieUpdate();
+}, { passive: true });
+window.addEventListener("resize", requestLottieUpdate);
 updateHeader();
+requestLottieUpdate();
 
 navToggle.addEventListener("click", () => {
     const willOpen = navToggle.getAttribute("aria-expanded") !== "true";
