@@ -2,7 +2,7 @@
     --bg: #F6F3EC;
     --surface: #FFFCF7;
     --sand: #EEE8DE;
-    --ink: #2E2925;
+    --ink: #5C4033;
     --muted: #71665F;
     --brand: #8E6C60;
     --accent: #A2573D;
@@ -154,6 +154,10 @@ button {
     display: block;
     width: 32px;
     height: 32px;
+}
+
+.menu-lottie {
+    margin-left: 10px;
 }
 
 .header-actions {
