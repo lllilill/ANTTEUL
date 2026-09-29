@@ -12,37 +12,33 @@
 <body>
     <a class="skip-link" href="#main">본문 바로가기</a>
 
-    <header class="site-header" data-header>
-        <nav class="desktop-nav nav-left" aria-label="브랜드 메뉴">
-            <a href="#brand">브랜드</a>
-            <a href="#space">공간</a>
-            <a href="#craft">제작</a>
-        </nav>
-
-        <a class="brand-mark" href="#top" aria-label="ANTTEUL 안뜰 홈">
+    <header class="site-header" data-header data-state="expanded">
+        <button class="brand-mark" type="button" data-header-toggle aria-expanded="true" aria-controls="header-nav" aria-label="펼쳐진 헤더">
             <canvas class="menu-lottie" data-menu-lottie width="320" height="320" aria-hidden="true"></canvas>
-            <span>ANTTEUL</span>
-        </a>
-
-        <nav class="desktop-nav nav-right" aria-label="제품 메뉴">
-            <a href="#products">가구</a>
-            <a href="#products" data-filter-link="light">조명</a>
-            <a href="#inquiry">문의</a>
-        </nav>
-
-        <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="메뉴 열기">
-            <span></span>
-            <span></span>
         </button>
 
-        <nav class="mobile-nav" id="mobile-nav" aria-label="모바일 메뉴">
+        <nav class="header-nav" id="header-nav" aria-label="주요 메뉴">
             <a href="#brand">브랜드</a>
-            <a href="#space">공간</a>
-            <a href="#craft">제작</a>
+            <a href="#space">스타일</a>
             <a href="#products">가구</a>
-            <a href="#products" data-filter-link="light">조명</a>
+            <a href="#craft">매장</a>
             <a href="#inquiry">문의</a>
         </nav>
+
+        <div class="header-actions" aria-label="빠른 메뉴">
+            <a class="header-icon" href="#inquiry" aria-label="문의">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="7.5" r="4"></circle>
+                    <path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path>
+                </svg>
+            </a>
+            <span class="header-icon" role="img" aria-label="한국어">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="8"></circle>
+                    <path d="M4.5 9h15M4.5 15h15M12 4c2.2 2.2 3.2 4.9 3.2 8S14.2 17.8 12 20M12 4C9.8 6.2 8.8 8.9 8.8 12s1 5.8 3.2 8"></path>
+                </svg>
+            </span>
+        </div>
     </header>
 
     <main id="main">

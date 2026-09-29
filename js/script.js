@@ -5,11 +5,10 @@ document.documentElement.classList.add("has-js");
 DotLottie.setWasmUrl("js/vendor/dotlottie-player.wasm");
 
 const header = document.querySelector("[data-header]");
+const headerToggle = document.querySelector("[data-header-toggle]");
 const menuLottieCanvas = document.querySelector("[data-menu-lottie]");
 const scrollLottieCanvas = document.querySelector("[data-scroll-lottie]");
 const scrollLottieSection = document.querySelector("[data-scroll-lottie-section]");
-const navToggle = document.querySelector(".nav-toggle");
-const mobileNav = document.querySelector(".mobile-nav");
 const filterButtons = document.querySelectorAll("[data-filter]");
 const filterLinks = document.querySelectorAll("[data-filter-link]");
 const productCards = document.querySelectorAll(".product-card");
@@ -102,10 +101,36 @@ const menuFrameController = createFrameController(menuLottie, menuLottieCanvas);
 const scrollFrameController = createFrameController(scrollLottie, scrollLottieCanvas);
 const scrollLottieFrames = [0, 10, 20, 30, 40, 50, 80];
 const scrollLottieThresholds = [0, 0.08, 0.2, 0.32, 0.44, 0.56, 0.68];
-let menuLottieIsScrolled = false;
-let menuLottieHasScrolled = false;
+let headerIsExpanded = window.scrollY <= 1;
+let menuLottieReady = false;
+let lastHeaderScrollY = window.scrollY;
 let scrollLottieStage = 0;
 let scrollTicking = false;
+
+const playHeaderLottie = (expanded) => {
+    if (!menuLottieReady) {
+        return;
+    }
+
+    menuFrameController.draw(expanded ? 15 : 0);
+    menuFrameController.animateTo(expanded ? 25 : 15, expanded ? 340 : 500);
+};
+
+const setHeaderExpanded = (expanded, animate = true, force = false) => {
+    if (!force && headerIsExpanded === expanded) {
+        return;
+    }
+
+    headerIsExpanded = expanded;
+    header.classList.toggle("is-collapsed", !expanded);
+    header.dataset.state = expanded ? "expanded" : "collapsed";
+    headerToggle.setAttribute("aria-expanded", String(expanded));
+    headerToggle.setAttribute("aria-label", expanded ? "펼쳐진 헤더" : "헤더 메뉴 펼치기");
+
+    if (animate) {
+        playHeaderLottie(expanded);
+    }
+};
 
 const getScrollLottieStage = (progress) => {
     for (let index = scrollLottieThresholds.length - 1; index >= 0; index -= 1) {
@@ -118,19 +143,6 @@ const getScrollLottieStage = (progress) => {
 };
 
 const updateLottieFrames = () => {
-    const isScrolled = window.scrollY > 1;
-
-    if (isScrolled !== menuLottieIsScrolled) {
-        menuLottieIsScrolled = isScrolled;
-
-        if (isScrolled) {
-            menuLottieHasScrolled = true;
-            menuFrameController.animateTo(15);
-        } else if (menuLottieHasScrolled) {
-            menuFrameController.animateTo(25);
-        }
-    }
-
     const sectionTop = scrollLottieSection.getBoundingClientRect().top;
     const scrollDistance = Math.max(scrollLottieSection.offsetHeight - window.innerHeight, 1);
     const progress = Math.min(Math.max(-sectionTop / scrollDistance, 0), 1);
@@ -156,17 +168,22 @@ const requestLottieUpdate = () => {
     }
 };
 
+menuLottie.addEventListener("load", () => {
+    menuLottieReady = true;
+    playHeaderLottie(headerIsExpanded);
+});
 scrollLottie.addEventListener("load", requestLottieUpdate);
 
-const closeMenu = () => {
-    navToggle.setAttribute("aria-expanded", "false");
-    navToggle.setAttribute("aria-label", "메뉴 열기");
-    mobileNav.classList.remove("is-open");
-    document.body.classList.remove("is-menu-open");
-};
-
 const updateHeader = () => {
-    header.classList.toggle("is-scrolled", window.scrollY > 8);
+    const currentScrollY = window.scrollY;
+
+    if (currentScrollY <= 1) {
+        setHeaderExpanded(true);
+    } else if (Math.abs(currentScrollY - lastHeaderScrollY) > 1) {
+        setHeaderExpanded(false);
+    }
+
+    lastHeaderScrollY = currentScrollY;
 };
 
 window.addEventListener("scroll", () => {
@@ -174,20 +191,13 @@ window.addEventListener("scroll", () => {
     requestLottieUpdate();
 }, { passive: true });
 window.addEventListener("resize", requestLottieUpdate);
+setHeaderExpanded(headerIsExpanded, false, true);
 updateHeader();
 requestLottieUpdate();
 
-navToggle.addEventListener("click", () => {
-    const willOpen = navToggle.getAttribute("aria-expanded") !== "true";
-    navToggle.setAttribute("aria-expanded", String(willOpen));
-    navToggle.setAttribute("aria-label", willOpen ? "메뉴 닫기" : "메뉴 열기");
-    mobileNav.classList.toggle("is-open", willOpen);
-    document.body.classList.toggle("is-menu-open", willOpen);
-});
-
-mobileNav.addEventListener("click", (event) => {
-    if (event.target.matches("a")) {
-        closeMenu();
+headerToggle.addEventListener("click", () => {
+    if (!headerIsExpanded) {
+        setHeaderExpanded(true);
     }
 });
 
