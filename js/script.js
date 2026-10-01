@@ -292,3 +292,21 @@ if ("IntersectionObserver" in window) {
 } else {
     revealItems.forEach((item) => item.classList.add("is-visible"));
 }
+
+const bannerVideo = document.querySelector('.hero-video');
+const soundButton = document.querySelector('[data-hero-sound]');
+if (bannerVideo && soundButton) {
+    const syncSound = () => {
+        const audible = !bannerVideo.muted && bannerVideo.volume > 0;
+        soundButton.setAttribute('aria-pressed', String(audible));
+        soundButton.setAttribute('aria-label', audible ? '영상 소리 끄기' : '영상 소리 켜기');
+        soundButton.querySelector('[data-sound-label]').textContent = audible ? '소리 끄기' : '소리 켜기';
+    };
+    soundButton.addEventListener('click', () => {
+        bannerVideo.muted = !bannerVideo.muted;
+        if (!bannerVideo.muted && bannerVideo.volume === 0) bannerVideo.volume = 1;
+        syncSound();
+    });
+    bannerVideo.addEventListener('volumechange', syncSound);
+    syncSound();
+}
