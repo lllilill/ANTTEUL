@@ -8,8 +8,8 @@
     <meta name="theme-color" content="#F6F3EC">
     <title>ANTTEUL | 안뜰</title>
     <link rel="icon" type="image/svg+xml" href="img/antteul_favicon.svg">
-    <link rel="stylesheet" href="css/style.css?v=20261003-main-1">
-    <link rel="stylesheet" href="css/main.css?v=20261003-main-1">
+    <link rel="stylesheet" href="css/style.css?v=20261003-main-2">
+    <link rel="stylesheet" href="css/main.css?v=20261003-main-2">
 </head>
 
 <body>
@@ -18,7 +18,7 @@
 
 <header class="site-header" data-header data-state="expanded">
         <button class="brand-mark" type="button" data-header-toggle aria-expanded="true" aria-controls="header-nav" aria-label="안뜰 메인 페이지로 이동">
-            <canvas class="menu-lottie" data-menu-lottie width="320" height="320" aria-hidden="true"></canvas>
+            <img class="brand-initial" src="img/antteul_logo.svg" alt="" aria-hidden="true"><canvas class="menu-lottie" data-menu-lottie width="320" height="320" aria-hidden="true"></canvas>
         </button>
 
 
@@ -33,19 +33,15 @@
 
 
 <div class="header-actions" aria-label="빠른 메뉴">
-            <a class="header-icon" href="contact/" aria-label="문의">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="7.5" r="4"></circle>
-                    <path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path>
-                </svg>
-            </a>
-            <span class="header-icon" role="img" aria-label="한국어">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="12" r="8"></circle>
-                    <path d="M4.5 9h15M4.5 15h15M12 4c2.2 2.2 3.2 4.9 3.2 8S14.2 17.8 12 20M12 4C9.8 6.2 8.8 8.9 8.8 12s1 5.8 3.2 8"></path>
-                </svg>
-            </span>
-        </div>
+<form class="header-search" role="search" action="furniture/" data-search-form>
+<div class="search-field" data-search-field inert><label class="sr-only" for="site-search">가구 검색</label><input id="site-search" name="q" type="search" placeholder="가구 검색" autocomplete="off" aria-label="가구 검색"></div>
+<button class="header-icon" type="button" data-search-toggle aria-label="검색 열기" aria-expanded="false" aria-controls="site-search"><img src="img/search.svg" alt="" width="16" height="16"></button>
+</form>
+<a class="header-icon" href="contact/" aria-label="회원 문의"><img src="img/login.svg" alt="" width="16" height="16"></a>
+<a class="header-icon" href="furniture/" aria-label="가구 쇼핑"><img src="img/shopping.svg" alt="" width="16" height="16"></a>
+<button class="header-icon" type="button" popovertarget="language-menu" aria-label="언어 선택"><img src="img/language.svg" alt="" width="16" height="16"></button>
+<div id="language-menu" class="language-menu" popover><p>언어 / Language</p><span lang="ko">한국어 ✓</span></div>
+</div>
 
     </header>
 
@@ -53,8 +49,12 @@
 
 <main id="main">
 <section class="hero" id="top" aria-label="안뜰 브랜드 필름">
-            <video class="hero-video" autoplay muted loop playsinline preload="auto" aria-label="안뜰 브랜드 필름"><source src="img/banner.mp4" type="video/mp4"></video>
-            <button class="hero-sound" type="button" data-hero-sound aria-label="영상 소리 켜기" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4Z"/><path class="sound-off" d="m16 9 6 6m0-6-6 6"/><path class="sound-on" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg><span data-sound-label>소리 켜기</span></button>
+            <video class="hero-video" autoplay muted loop playsinline preload="auto" aria-label="안뜰 브랜드 필름"><source src="img/banner.mp4?v=20261003-original" type="video/mp4"></video>
+            <div class="hero-controls" aria-label="영상 제어">
+<button class="video-play" data-video-play type="button" aria-label="영상 일시정지"><span aria-hidden="true">Ⅱ</span></button>
+<div class="video-volume"><button type="button" data-video-mute aria-label="음소거 해제" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4Z"/><path class="sound-off" d="m16 9 6 6m0-6-6 6"/><path class="sound-on" d="M15 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14"/></svg></button><label class="sr-only" for="video-volume">영상 음량</label><input id="video-volume" data-video-volume type="range" min="0" max="1" step="0.05" value="0" aria-label="영상 음량"></div>
+<label class="sr-only" for="video-progress">영상 재생 위치</label><input id="video-progress" class="video-progress" data-video-progress type="range" min="0" max="100" step="0.1" value="0" aria-label="영상 재생 위치" disabled>
+</div>
         </section>
 
 <section class="home-intro" aria-labelledby="intro-title">
@@ -68,7 +68,7 @@
 </div>
 </section>
 
-<section class="home-space" aria-label="안뜰의 공간"><a class="image-link" href="space/" aria-label="안뜰의 공간 바로가기"><img src="img/main/space-composition.webp" alt="선반, 수납장, 조명, 소파와 좌탁으로 완성한 안뜰의 거실" loading="lazy"></a><a class="text-link" href="space/">안뜰의 공간 바로가기 →</a></section>
+<section class="scroll-lottie-section home-scroll" data-scroll-lottie-section aria-label="안뜰 가구의 조형 변화"><div class="scroll-lottie-sticky"><canvas class="scroll-lottie" data-scroll-lottie width="1774" height="887" aria-label="스크롤에 따라 변하는 안뜰의 가구 구성" role="img"></canvas><a class="text-link scroll-space-link" href="space/">안뜰의 공간 바로가기 →</a></div></section>
 
 <section class="home-story " aria-labelledby="story-0"><a class="image-link" href="furniture/?category=seating" aria-label="의자 보러가기"><img src="img/main/chair-story.webp" alt="고요히 기대는 의자" loading="lazy"></a>
 <div class="story-copy"><p class="story-eyebrow">Seating for Quiet Rest</p><h2 id="story-0">고요히 기대는 의자</h2><p>안뜰의 의자는 한국 전통의 단정한 선과 나무의 결을 따라,<br>몸이 편히 머무는 조용한 쉼의 자리를 만듭니다.</p><a class="text-link" href="furniture/?category=seating">의자 보러가기 →</a></div>
@@ -104,7 +104,17 @@
 <div class="bestseller-image"><img src="img/main/bed.webp" alt="고딕 침대" loading="lazy" draggable="false"><img class="lifestyle" src="img/main/store.webp" alt="" loading="lazy" draggable="false"></div>
 
 <div class="bestseller-meta"><span class="link-label">고딕 침대</span><span>₩260,000</span></div>
-</a></div>
+</a><a class="bestseller-card" href="furniture/?category=seating"><div class="bestseller-image"><img src="img/chair_2.jpg" alt="Yeon Lounge Chair" loading="lazy" draggable="false"></div><div class="bestseller-meta"><span class="link-label">Yeon Lounge Chair</span><span>제품 자세히 보기 →</span></div></a>
+<a class="bestseller-card" href="furniture/?category=table"><div class="bestseller-image"><img src="img/table_1.jpg" alt="Haneul Desk" loading="lazy" draggable="false"></div><div class="bestseller-meta"><span class="link-label">Haneul Desk</span><span>제품 자세히 보기 →</span></div></a>
+<a class="bestseller-card" href="furniture/?category=storage"><div class="bestseller-image"><img src="img/cabinet_6.jpg" alt="Sarang Cabinet" loading="lazy" draggable="false"></div><div class="bestseller-meta"><span class="link-label">Sarang Cabinet</span><span>제품 자세히 보기 →</span></div></a>
+<a class="bestseller-card" href="furniture/?category=light"><div class="bestseller-image"><img src="img/lighting_3.jpg" alt="Yun Pendant" loading="lazy" draggable="false"></div><div class="bestseller-meta"><span class="link-label">Yun Pendant</span><span>제품 자세히 보기 →</span></div></a>
+<a class="bestseller-card" href="furniture/?category=seating"><div class="bestseller-image"><img src="img/chair_5.jpg" alt="Naru Sofa" loading="lazy" draggable="false"></div><div class="bestseller-meta"><span class="link-label">Naru Sofa</span><span>제품 자세히 보기 →</span></div></a>
+<a class="bestseller-card" href="furniture/?category=table"><div class="bestseller-image"><img src="img/table_5.jpg" alt="Mok Low Table" loading="lazy" draggable="false"></div><div class="bestseller-meta"><span class="link-label">Mok Low Table</span><span>제품 자세히 보기 →</span></div></a>
+<a class="bestseller-card" href="furniture/?category=storage"><div class="bestseller-image"><img src="img/cabinet_5.jpg" alt="Dal Storage Bench" loading="lazy" draggable="false"></div><div class="bestseller-meta"><span class="link-label">Dal Storage Bench</span><span>제품 자세히 보기 →</span></div></a>
+<a class="bestseller-card" href="furniture/?category=room"><div class="bestseller-image"><img src="img/partition_1.jpg" alt="Maro Screen" loading="lazy" draggable="false"></div><div class="bestseller-meta"><span class="link-label">Maro Screen</span><span>제품 자세히 보기 →</span></div></a>
+<a class="bestseller-card" href="furniture/?category=storage"><div class="bestseller-image"><img src="img/bookcase_1.jpg" alt="Gyeol Shelf" loading="lazy" draggable="false"></div><div class="bestseller-meta"><span class="link-label">Gyeol Shelf</span><span>제품 자세히 보기 →</span></div></a>
+<a class="bestseller-card" href="furniture/?category=room"><div class="bestseller-image"><img src="img/mirror_2.jpg" alt="On Mirror" loading="lazy" draggable="false"></div><div class="bestseller-meta"><span class="link-label">On Mirror</span><span>제품 자세히 보기 →</span></div></a>
+</div>
 <button class="carousel-arrow previous" data-carousel-prev aria-label="이전 상품">‹</button><button class="carousel-arrow next" data-carousel-next aria-label="다음 상품">›</button></div>
 
 <div class="carousel-toolbar">
@@ -115,7 +125,7 @@
 </section>
 </main>
 
-<footer class="home-footer"><a class="footer-logo" href="./" aria-label="안뜰 메인 페이지"><img src="img/antteul_logo.svg" alt="안뜰" width="60" height="60"></a>
+<footer class="home-footer"><div class="footer-logo"><img src="img/antteul_logo.svg" alt="안뜰" width="60" height="60"></div>
 <div class="footer-column newsletter"><h2>NEWSLETTER</h2><p>뉴스레터를 구독하세요</p>
 <form data-newsletter><label class="sr-only" for="newsletter-email">이메일</label><input id="newsletter-email" type="email" name="email" autocomplete="email" placeholder="이메일 주소" required><label class="consent"><input type="checkbox" required> 개인정보 수집 및 이용 동의</label><p class="privacy-note">입력한 이메일은 구독 요청 메일 작성에만 사용됩니다.</p><button type="submit">뉴스레터 구독하기</button><p data-newsletter-status role="status"></p></form>
 </div>
@@ -128,5 +138,5 @@
 
 <div class="footer-column"><h2>LEGAL INFO</h2><a href="contact/?topic=privacy">개인정보보호정책</a><a href="contact/?topic=terms">이용약관</a><a href="contact/?topic=guide">이용안내</a></div>
 <p class="company-info">COMPANY : 주식회사 안뜰 &nbsp; DESIGNER: 송율 &nbsp; ADDRESS: 경기도 안성시 공도읍 진사길 32<br>© 2026 ANTTEUL</p></footer>
-<script type="module" src="js/script.js?v=20261003-main-1"></script></body>
+<script type="module" src="js/script.js?v=20261003-main-2"></script></body>
 </html>

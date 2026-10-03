@@ -9,8 +9,8 @@
     <meta name="theme-color" content="#F6F3EC">
     <title>공간 | ANTTEUL 안뜰</title>
     <link rel="icon" type="image/svg+xml" href="img/antteul_favicon.svg">
-    <link rel="stylesheet" href="css/style.css?v=20261003-main-1">
-    <link rel="stylesheet" href="css/main.css?v=20261003-main-1">
+    <link rel="stylesheet" href="css/style.css?v=20261003-main-2">
+    <link rel="stylesheet" href="css/main.css?v=20261003-main-2">
 </head>
 
 <body>
@@ -19,7 +19,7 @@
 
 <header class="site-header" data-header data-state="expanded">
         <button class="brand-mark" type="button" data-header-toggle aria-expanded="true" aria-controls="header-nav" aria-label="안뜰 메인 페이지로 이동">
-            <canvas class="menu-lottie" data-menu-lottie width="320" height="320" aria-hidden="true"></canvas>
+            <img class="brand-initial" src="img/antteul_logo.svg" alt="" aria-hidden="true"><canvas class="menu-lottie" data-menu-lottie width="320" height="320" aria-hidden="true"></canvas>
         </button>
 
 
@@ -34,19 +34,15 @@
 
 
 <div class="header-actions" aria-label="빠른 메뉴">
-            <a class="header-icon" href="contact/" aria-label="문의">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="7.5" r="4"></circle>
-                    <path d="M5.5 20a6.5 6.5 0 0 1 13 0"></path>
-                </svg>
-            </a>
-            <span class="header-icon" role="img" aria-label="한국어">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="12" cy="12" r="8"></circle>
-                    <path d="M4.5 9h15M4.5 15h15M12 4c2.2 2.2 3.2 4.9 3.2 8S14.2 17.8 12 20M12 4C9.8 6.2 8.8 8.9 8.8 12s1 5.8 3.2 8"></path>
-                </svg>
-            </span>
-        </div>
+<form class="header-search" role="search" action="furniture/" data-search-form>
+<div class="search-field" data-search-field inert><label class="sr-only" for="site-search">가구 검색</label><input id="site-search" name="q" type="search" placeholder="가구 검색" autocomplete="off" aria-label="가구 검색"></div>
+<button class="header-icon" type="button" data-search-toggle aria-label="검색 열기" aria-expanded="false" aria-controls="site-search"><img src="img/search.svg" alt="" width="16" height="16"></button>
+</form>
+<a class="header-icon" href="contact/" aria-label="회원 문의"><img src="img/login.svg" alt="" width="16" height="16"></a>
+<a class="header-icon" href="furniture/" aria-label="가구 쇼핑"><img src="img/shopping.svg" alt="" width="16" height="16"></a>
+<button class="header-icon" type="button" popovertarget="language-menu" aria-label="언어 선택"><img src="img/language.svg" alt="" width="16" height="16"></button>
+<div id="language-menu" class="language-menu" popover><p>언어 / Language</p><span lang="ko">한국어 ✓</span></div>
+</div>
 
     </header>
 
@@ -80,7 +76,7 @@
         </section>
 </main>
 
-<footer class="home-footer"><a class="footer-logo" href="./" aria-label="안뜰 메인 페이지"><img src="img/antteul_logo.svg" alt="안뜰" width="60" height="60"></a>
+<footer class="home-footer"><div class="footer-logo"><img src="img/antteul_logo.svg" alt="안뜰" width="60" height="60"></div>
 <div class="footer-column newsletter"><h2>NEWSLETTER</h2><p>뉴스레터를 구독하세요</p>
 <form data-newsletter><label class="sr-only" for="newsletter-email">이메일</label><input id="newsletter-email" type="email" name="email" autocomplete="email" placeholder="이메일 주소" required><label class="consent"><input type="checkbox" required> 개인정보 수집 및 이용 동의</label><p class="privacy-note">입력한 이메일은 구독 요청 메일 작성에만 사용됩니다.</p><button type="submit">뉴스레터 구독하기</button><p data-newsletter-status role="status"></p></form>
 </div>
@@ -93,5 +89,5 @@
 
 <div class="footer-column"><h2>LEGAL INFO</h2><a href="contact/?topic=privacy">개인정보보호정책</a><a href="contact/?topic=terms">이용약관</a><a href="contact/?topic=guide">이용안내</a></div>
 <p class="company-info">COMPANY : 주식회사 안뜰 &nbsp; DESIGNER: 송율 &nbsp; ADDRESS: 경기도 안성시 공도읍 진사길 32<br>© 2026 ANTTEUL</p></footer>
-<script type="module" src="js/script.js?v=20261003-main-1"></script></body>
+<script type="module" src="js/script.js?v=20261003-main-2"></script></body>
 </html>

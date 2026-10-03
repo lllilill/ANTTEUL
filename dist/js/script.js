@@ -97,7 +97,7 @@ const scrollLottie = scrollLottieCanvas ? new DotLottie({
     },
 }) : null;
 
-const menuFrameController = createFrameController(menuLottie, menuLottieCanvas);
+const menuFrameController = createFrameController(menuLottie, menuLottieCanvas, 25);
 const scrollFrameController = scrollLottie ? createFrameController(scrollLottie, scrollLottieCanvas) : null;
 const scrollLottieFrames = [0, 10, 20, 30, 40, 50, 80];
 const scrollLottieThresholds = [0, 0.08, 0.2, 0.32, 0.44, 0.56, 0.68];
@@ -171,7 +171,8 @@ const requestLottieUpdate = () => {
 
 menuLottie.addEventListener("load", () => {
     menuLottieReady = true;
-    playHeaderLottie(headerIsExpanded);
+    menuFrameController.draw(headerIsExpanded ? 25 : 15);
+    requestAnimationFrame(() => header.classList.add("lottie-ready"));
 });
 scrollLottie?.addEventListener("load", requestLottieUpdate);
 
@@ -204,14 +205,23 @@ headerToggle.addEventListener("click", () => {
     }
 });
 
+const query = (new URLSearchParams(location.search).get('q') || '').trim().toLocaleLowerCase();
+const searchTerms = {seating: '의자 소파 좌석 체어', table: '탁자 책상 테이블 데스크', storage: '수납장 서랍장 책장 선반', room: '침대 거울 파티션 공간', light: '조명 램프 등'};
 const applyFilter = (filter) => {
     filterButtons.forEach((button) => {
         button.classList.toggle("is-active", button.dataset.filter === filter);
     });
 
     productCards.forEach((card) => {
-        card.hidden = filter !== "all" && card.dataset.category !== filter;
+        const matchesCategory = filter === 'all' || card.dataset.category === filter;
+        const haystack = `${card.textContent} ${card.querySelector('img')?.alt || ''} ${searchTerms[card.dataset.category] || ''}`.toLocaleLowerCase();
+        card.hidden = !matchesCategory || (query !== '' && !haystack.includes(query));
     });
+    const status = document.querySelector('[data-search-status]');
+    if (status) {
+        const count = [...productCards].filter(card => !card.hidden).length;
+        status.textContent = query ? `“${query}” 검색 결과 ${count}개${count ? '' : ' · 다른 검색어나 분류를 선택해 주세요.'}` : '';
+    }
 };
 
 filterButtons.forEach((button) => {
@@ -297,26 +307,90 @@ if ("IntersectionObserver" in window) {
 }
 
 const bannerVideo = document.querySelector('.hero-video');
-const soundButton = document.querySelector('[data-hero-sound]');
-if (bannerVideo && soundButton) {
-    const syncSound = () => {
-        const audible = !bannerVideo.muted && bannerVideo.volume > 0;
-        soundButton.setAttribute('aria-pressed', String(audible));
-        soundButton.setAttribute('aria-label', audible ? '영상 소리 끄기' : '영상 소리 켜기');
-        soundButton.querySelector('[data-sound-label]').textContent = audible ? '소리 끄기' : '소리 켜기';
+if (bannerVideo) {
+    const play = document.querySelector('[data-video-play]');
+    const mute = document.querySelector('[data-video-mute]');
+    const volume = document.querySelector('[data-video-volume]');
+    const seek = document.querySelector('[data-video-progress]');
+    let lastVolume = 1;
+    const syncPlayback = () => {
+        play.setAttribute('aria-label', bannerVideo.paused ? '영상 재생' : '영상 일시정지');
+        play.firstElementChild.textContent = bannerVideo.paused ? '▶' : 'Ⅱ';
     };
-    soundButton.addEventListener('click', () => {
-        bannerVideo.muted = !bannerVideo.muted;
-        if (!bannerVideo.muted && bannerVideo.volume === 0) bannerVideo.volume = 1;
-        syncSound();
+    const syncVolume = () => {
+        const silent = bannerVideo.muted || bannerVideo.volume === 0;
+        mute.setAttribute('aria-pressed', String(silent));
+        mute.setAttribute('aria-label', silent ? '음소거 해제' : '음소거');
+        volume.value = silent ? 0 : bannerVideo.volume;
+    };
+    const syncProgress = () => {
+        const duration = bannerVideo.duration;
+        seek.disabled = !Number.isFinite(duration) || duration <= 0;
+        if (!seek.disabled) {
+            seek.value = bannerVideo.currentTime / duration * 100;
+            seek.style.setProperty('--played', `${seek.value}%`);
+            seek.setAttribute('aria-valuetext', `${Math.floor(bannerVideo.currentTime)}초 / ${Math.floor(duration)}초`);
+        }
+    };
+    play.addEventListener('click', async () => {
+        if (!bannerVideo.paused) bannerVideo.pause();
+        else { try { await bannerVideo.play(); } catch { syncPlayback(); } }
     });
-    bannerVideo.addEventListener('volumechange', syncSound);
-    syncSound();
+    mute.addEventListener('click', () => {
+        if (bannerVideo.muted || bannerVideo.volume === 0) {
+            bannerVideo.volume = lastVolume || 1; bannerVideo.muted = false;
+        } else { lastVolume = bannerVideo.volume; bannerVideo.muted = true; }
+    });
+    volume.addEventListener('input', () => {
+        bannerVideo.volume = Number(volume.value);
+        bannerVideo.muted = bannerVideo.volume === 0;
+        if (bannerVideo.volume > 0) lastVolume = bannerVideo.volume;
+    });
+    seek.addEventListener('input', () => {
+        if (Number.isFinite(bannerVideo.duration)) bannerVideo.currentTime = Number(seek.value) / 100 * bannerVideo.duration;
+        syncProgress();
+    });
+    ['play', 'pause', 'ended'].forEach(event => bannerVideo.addEventListener(event, syncPlayback));
+    ['loadedmetadata', 'durationchange', 'timeupdate'].forEach(event => bannerVideo.addEventListener(event, syncProgress));
+    bannerVideo.addEventListener('volumechange', syncVolume);
+    syncPlayback(); syncVolume(); syncProgress();
 }
+
+const searchForm = document.querySelector('[data-search-form]');
+const searchToggle = document.querySelector('[data-search-toggle]');
+const searchField = document.querySelector('[data-search-field]');
+const searchInput = document.querySelector('#site-search');
+const closeSearch = () => {
+    header.classList.remove('search-open');
+    searchToggle.setAttribute('aria-expanded', 'false');
+    searchToggle.setAttribute('aria-label', '검색 열기');
+    searchField.inert = true;
+};
+searchToggle.addEventListener('click', () => {
+    const opened = header.classList.contains('search-open');
+    if (opened && searchInput.value.trim()) { searchForm.requestSubmit(); return; }
+    if (opened) { closeSearch(); return; }
+    header.classList.add('search-open');
+    searchToggle.setAttribute('aria-expanded', 'true');
+    searchToggle.setAttribute('aria-label', '가구 검색 실행');
+    searchField.inert = false;
+    window.setTimeout(() => {
+        if (header.classList.contains('search-open')) searchInput.focus();
+    }, prefersReducedMotion ? 0 : 360);
+});
+searchForm.addEventListener('keydown', event => {
+    if (event.key === 'Escape') { closeSearch(); searchToggle.focus(); }
+});
+document.addEventListener('pointerdown', event => { if (!searchForm.contains(event.target)) closeSearch(); });
+searchForm.addEventListener('submit', event => {
+    searchInput.value = searchInput.value.trim();
+    if (!searchInput.value) { event.preventDefault(); searchInput.focus(); }
+});
 
 // Category links remain normal page navigations, with the selected collection restored.
 const category = new URLSearchParams(location.search).get('category');
-if (category && [...filterButtons].some(button => button.dataset.filter === category)) applyFilter(category);
+if (productCards.length) applyFilter([...filterButtons].some(button => button.dataset.filter === category) ? category : 'all');
+if (query) searchInput.value = query;
 
 const track = document.querySelector('[data-carousel]');
 if (track) {
