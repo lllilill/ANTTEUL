@@ -9,6 +9,10 @@ const headerToggle = document.querySelector("[data-header-toggle]");
 const menuLottieCanvas = document.querySelector("[data-menu-lottie]");
 const scrollLottieCanvas = document.querySelector("[data-scroll-lottie]");
 const scrollLottieSection = document.querySelector("[data-scroll-lottie-section]");
+const brandScroll = document.querySelector("[data-brand-scroll]");
+const brandPanel = brandScroll?.querySelector(".home-intro");
+const brandViewport = brandScroll?.querySelector(".intro-photo");
+const brandPanImage = brandScroll?.querySelector(".brand-pan-image");
 const filterButtons = document.querySelectorAll("[data-filter]");
 const filterLinks = document.querySelectorAll("[data-filter-link]");
 const productCards = document.querySelectorAll(".product-card");
@@ -100,12 +104,14 @@ const scrollLottie = scrollLottieCanvas ? new DotLottie({
 const menuFrameController = createFrameController(menuLottie, menuLottieCanvas, 25);
 const scrollFrameController = scrollLottie ? createFrameController(scrollLottie, scrollLottieCanvas) : null;
 const scrollLottieFrames = [0, 10, 20, 30, 40, 50, 80];
-const scrollLottieThresholds = [0, 0.08, 0.2, 0.32, 0.44, 0.56, 0.68];
+const scrollLottieThresholds = [0, 0.08, 0.16, 0.24, 0.32, 0.4, 0.5];
 let headerIsExpanded = window.scrollY <= 1;
 let menuLottieReady = false;
 let lastHeaderScrollY = window.scrollY;
 let scrollLottieStage = 0;
+let scrollLottieReady = false;
 let scrollTicking = false;
+let brandTicking = false;
 
 const playHeaderLottie = (expanded) => {
     if (!menuLottieReady) {
@@ -159,6 +165,7 @@ const updateLottieFrames = () => {
 
     scrollLottieSection.dataset.progress = progress.toFixed(3);
     scrollLottieSection.dataset.stage = String(scrollLottieStage);
+    scrollLottieSection.classList.toggle("is-active", scrollLottieReady && nextStage > 0 && sectionTop < window.innerHeight && sectionTop + scrollLottieSection.offsetHeight > 0);
     scrollTicking = false;
 };
 
@@ -169,12 +176,31 @@ const requestLottieUpdate = () => {
     }
 };
 
+const updateBrandPan = () => {
+    brandTicking = false;
+    if (!brandScroll || !brandPanImage || window.innerWidth <= 900 || prefersReducedMotion) return;
+    const scrollRange = Math.max(1, brandScroll.offsetHeight - brandPanel.offsetHeight);
+    const progress = Math.min(Math.max((45 - brandScroll.getBoundingClientRect().top) / scrollRange, 0), 1);
+    const imageTravel = Math.max(0, brandPanImage.offsetWidth - brandViewport.clientWidth);
+    brandPanImage.style.setProperty("--brand-pan", `${-imageTravel * progress}px`);
+    brandScroll.dataset.progress = progress.toFixed(3);
+};
+const requestBrandPan = () => {
+    if (!brandTicking) {
+        brandTicking = true;
+        window.requestAnimationFrame(updateBrandPan);
+    }
+};
+
 menuLottie.addEventListener("load", () => {
     menuLottieReady = true;
     menuFrameController.draw(headerIsExpanded ? 25 : 15);
     requestAnimationFrame(() => header.classList.add("lottie-ready"));
 });
-scrollLottie?.addEventListener("load", requestLottieUpdate);
+scrollLottie?.addEventListener("load", () => {
+    scrollLottieReady = true;
+    requestLottieUpdate();
+});
 
 const updateHeader = () => {
     const currentScrollY = window.scrollY;
@@ -191,11 +217,14 @@ const updateHeader = () => {
 window.addEventListener("scroll", () => {
     updateHeader();
     requestLottieUpdate();
+    requestBrandPan();
 }, { passive: true });
-window.addEventListener("resize", requestLottieUpdate);
+window.addEventListener("resize", () => { requestLottieUpdate(); requestBrandPan(); });
+brandPanImage?.addEventListener("load", requestBrandPan);
 setHeaderExpanded(headerIsExpanded, false, true);
 updateHeader();
 requestLottieUpdate();
+requestBrandPan();
 
 headerToggle.addEventListener("click", () => {
     if (!headerIsExpanded) {
@@ -311,8 +340,14 @@ if (bannerVideo) {
     const play = document.querySelector('[data-video-play]');
     const mute = document.querySelector('[data-video-mute]');
     const volume = document.querySelector('[data-video-volume]');
+    const volumeControl = volume.closest('.video-volume');
     const seek = document.querySelector('[data-video-progress]');
-    let lastVolume = 1;
+    const setVolumeOpen = (open) => {
+        volumeControl.classList.toggle('is-open', open);
+        mute.setAttribute('aria-expanded', String(open));
+        mute.setAttribute('aria-label', open ? '음량 조절 닫기' : '음량 조절 열기');
+        volume.tabIndex = open ? 0 : -1;
+    };
     const syncPlayback = () => {
         play.setAttribute('aria-label', bannerVideo.paused ? '영상 재생' : '영상 일시정지');
         play.firstElementChild.textContent = bannerVideo.paused ? '▶' : 'Ⅱ';
@@ -320,7 +355,6 @@ if (bannerVideo) {
     const syncVolume = () => {
         const silent = bannerVideo.muted || bannerVideo.volume === 0;
         mute.setAttribute('aria-pressed', String(silent));
-        mute.setAttribute('aria-label', silent ? '음소거 해제' : '음소거');
         volume.value = silent ? 0 : bannerVideo.volume;
     };
     const syncProgress = () => {
@@ -336,15 +370,16 @@ if (bannerVideo) {
         if (!bannerVideo.paused) bannerVideo.pause();
         else { try { await bannerVideo.play(); } catch { syncPlayback(); } }
     });
-    mute.addEventListener('click', () => {
-        if (bannerVideo.muted || bannerVideo.volume === 0) {
-            bannerVideo.volume = lastVolume || 1; bannerVideo.muted = false;
-        } else { lastVolume = bannerVideo.volume; bannerVideo.muted = true; }
-    });
+    mute.addEventListener('click', () => setVolumeOpen(!volumeControl.classList.contains('is-open')));
     volume.addEventListener('input', () => {
         bannerVideo.volume = Number(volume.value);
         bannerVideo.muted = bannerVideo.volume === 0;
-        if (bannerVideo.volume > 0) lastVolume = bannerVideo.volume;
+    });
+    volume.addEventListener('keydown', event => {
+        if (event.key === 'Escape') { setVolumeOpen(false); mute.focus(); }
+    });
+    document.addEventListener('pointerdown', event => {
+        if (!volumeControl.contains(event.target)) setVolumeOpen(false);
     });
     seek.addEventListener('input', () => {
         if (Number.isFinite(bannerVideo.duration)) bannerVideo.currentTime = Number(seek.value) / 100 * bannerVideo.duration;
@@ -353,7 +388,7 @@ if (bannerVideo) {
     ['play', 'pause', 'ended'].forEach(event => bannerVideo.addEventListener(event, syncPlayback));
     ['loadedmetadata', 'durationchange', 'timeupdate'].forEach(event => bannerVideo.addEventListener(event, syncProgress));
     bannerVideo.addEventListener('volumechange', syncVolume);
-    syncPlayback(); syncVolume(); syncProgress();
+    setVolumeOpen(false); syncPlayback(); syncVolume(); syncProgress();
 }
 
 const searchForm = document.querySelector('[data-search-form]');
@@ -396,47 +431,38 @@ const track = document.querySelector('[data-carousel]');
 if (track) {
     const previous = document.querySelector('[data-carousel-prev]');
     const next = document.querySelector('[data-carousel-next]');
-    const pause = document.querySelector('[data-carousel-pause]');
-    const progress = document.querySelector('[data-carousel-progress]');
-    let paused = prefersReducedMotion;
-    let hovered = false;
-    let focused = false;
-    let visible = false;
     let pointer = null;
     let dragged = false;
-    let lastAdvance = performance.now();
-    const maxScroll = () => Math.max(0, track.scrollWidth - track.clientWidth);
+    let lastFrame = 0;
+    let subpixel = 0;
+    let navigationPauseUntil = 0;
     const step = () => track.firstElementChild.getBoundingClientRect().width + parseFloat(getComputedStyle(track).gap);
-    const sync = () => {
+    const maxScroll = () => Math.max(0, track.scrollWidth - track.clientWidth);
+    const syncNavigation = () => {
         const max = maxScroll();
         previous.disabled = track.scrollLeft <= 2;
         next.disabled = track.scrollLeft >= max - 2;
-        const ratio = Math.min(1, track.clientWidth / track.scrollWidth);
-        progress.style.width = `${ratio * 100}%`;
-        progress.style.transform = `translateX(${max ? track.scrollLeft / max * (1 - ratio) / ratio * 100 : 0}%)`;
     };
-    const move = (direction, wrap = false) => {
-        let target = track.scrollLeft + direction * step();
-        if (wrap && track.scrollLeft >= maxScroll() - 2) target = 0;
-        track.scrollTo({left: Math.max(0, Math.min(maxScroll(), target)), behavior: prefersReducedMotion ? 'instant' : 'smooth'});
-        lastAdvance = performance.now();
+    const movePage = (direction) => {
+        const itemStep = step();
+        if (!itemStep) return;
+        const inset = parseFloat(getComputedStyle(track).paddingLeft);
+        const visibleCount = Math.max(1, Math.ceil((track.clientWidth - inset) / itemStep));
+        const nextUnseen = Math.ceil((track.scrollLeft + track.clientWidth - inset) / itemStep);
+        const firstVisible = Math.floor(track.scrollLeft / itemStep);
+        const index = direction > 0 ? nextUnseen : firstVisible - visibleCount;
+        track.scrollTo({
+            left: Math.max(0, Math.min(maxScroll(), index * itemStep)),
+            behavior: prefersReducedMotion ? 'instant' : 'smooth',
+        });
+        navigationPauseUntil = performance.now() + 1200;
     };
-    previous.addEventListener('click', () => move(-1));
-    next.addEventListener('click', () => move(1));
-    const syncPause = () => {
-        pause.setAttribute('aria-pressed', String(paused));
-        pause.setAttribute('aria-label', paused ? '자동 재생 시작' : '자동 재생 일시정지');
-        pause.textContent = paused ? '▶' : 'Ⅱ';
-    };
-    pause.addEventListener('click', () => { paused = !paused; lastAdvance = performance.now(); syncPause(); });
+    previous.addEventListener('click', () => movePage(-1));
+    next.addEventListener('click', () => movePage(1));
     track.addEventListener('keydown', event => {
-        if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') { event.preventDefault(); move(event.key === 'ArrowRight' ? 1 : -1); }
+        if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') { event.preventDefault(); movePage(event.key === 'ArrowRight' ? 1 : -1); }
     });
-    const carousel = track.closest('.bestsellers');
-    carousel.addEventListener('mouseenter', () => { hovered = true; });
-    carousel.addEventListener('mouseleave', () => { hovered = false; lastAdvance = performance.now(); });
-    carousel.addEventListener('focusin', () => { focused = true; });
-    carousel.addEventListener('focusout', event => { focused = carousel.contains(event.relatedTarget); lastAdvance = performance.now(); });
+    const carousel = track.closest('.carousel-shell');
     track.addEventListener('pointerdown', event => {
         if (event.pointerType !== 'mouse' || event.button !== 0) return;
         pointer = {id: event.pointerId, x: event.clientX, left: track.scrollLeft}; dragged = false;
@@ -449,21 +475,44 @@ if (track) {
             track.scrollLeft = pointer.left - distance;
         }
     });
-    const release = () => { pointer = null; track.classList.remove('is-dragging'); lastAdvance = performance.now(); };
+    const release = () => { pointer = null; track.classList.remove('is-dragging'); syncNavigation(); };
     window.addEventListener('pointerup', release);
     track.addEventListener('pointercancel', release);
     track.addEventListener('click', event => { if (dragged) { event.preventDefault(); dragged = false; } }, true);
     track.addEventListener('dragstart', event => event.preventDefault());
-    track.addEventListener('scroll', sync, {passive: true});
-    track.addEventListener('touchstart', () => { lastAdvance = performance.now(); }, {passive: true});
-    track.addEventListener('touchend', () => { lastAdvance = performance.now(); }, {passive: true});
-    new ResizeObserver(sync).observe(track);
-    new IntersectionObserver(entries => { visible = entries[0].isIntersecting; lastAdvance = performance.now(); }, {threshold: .3}).observe(track);
-    setInterval(() => {
-        if (!paused && !hovered && !focused && !pointer && visible && !document.hidden && performance.now() - lastAdvance > 4200) move(1, true);
-    }, 250);
-    sync(); syncPause();
+    track.addEventListener('scroll', syncNavigation, {passive: true});
+    new ResizeObserver(syncNavigation).observe(track);
+    const animate = (time) => {
+        const elapsed = Math.min(time - (lastFrame || time), 64);
+        lastFrame = time;
+        const bounds = track.getBoundingClientRect();
+        const inView = bounds.bottom > 0 && bounds.top < window.innerHeight;
+        const canAdvance = track.scrollLeft < maxScroll() - 1;
+        if (!prefersReducedMotion && canAdvance && inView && !carousel.matches(':hover') && !carousel.contains(document.activeElement) && !pointer && !document.hidden && time > navigationPauseUntil) {
+            subpixel += elapsed * .023;
+            const pixels = Math.floor(subpixel);
+            if (pixels > 0) {
+                track.scrollLeft = Math.min(maxScroll(), track.scrollLeft + pixels);
+                subpixel -= pixels;
+                syncNavigation();
+            }
+        }
+        window.requestAnimationFrame(animate);
+    };
+    syncNavigation();
+    window.requestAnimationFrame(animate);
 }
+
+const privacyDialog = document.querySelector('[data-privacy-dialog]');
+document.querySelectorAll('[data-privacy-open]').forEach(trigger => {
+    trigger.addEventListener('click', () => {
+        if (typeof privacyDialog?.showModal === 'function') privacyDialog.showModal();
+    });
+});
+document.querySelector('[data-privacy-close]')?.addEventListener('click', () => privacyDialog.close());
+privacyDialog?.addEventListener('click', event => {
+    if (event.target === privacyDialog) privacyDialog.close();
+});
 
 // A static GitHub Pages site cannot receive subscriptions: open a draft, never claim it was sent.
 document.querySelector('[data-newsletter]')?.addEventListener('submit', event => {

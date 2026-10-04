@@ -104,7 +104,9 @@ button {
 
 .header-nav a {
     position: relative;
+    width: clamp(44px, 4.5vw, 65px);
     padding: 5px 0;
+    text-align: center;
 }
 
 .header-nav a::after {
