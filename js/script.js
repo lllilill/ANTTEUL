@@ -188,7 +188,11 @@ const updateBrandPan = () => {
     brandTicking = false;
     if (!brandScroll || !brandPanImage || window.innerWidth <= 900 || prefersReducedMotion) return;
     const scrollRange = Math.max(1, brandScroll.offsetHeight - brandPanel.offsetHeight);
-    const progress = Math.min(Math.max((45 - brandScroll.getBoundingClientRect().top) / scrollRange, 0), 1);
+    const holdDistance = scrollRange * (20 / 155);
+    const panDistance = scrollRange - (holdDistance * 2);
+    const stickyTop = parseFloat(window.getComputedStyle(brandPanel).top) || 50;
+    const elapsed = stickyTop - brandScroll.getBoundingClientRect().top;
+    const progress = Math.min(Math.max((elapsed - holdDistance) / panDistance, 0), 1);
     const imageTravel = Math.max(0, brandPanImage.offsetWidth - brandViewport.clientWidth);
     brandPanImage.style.setProperty("--brand-pan", `${-imageTravel * progress}px`);
     brandScroll.dataset.progress = progress.toFixed(3);

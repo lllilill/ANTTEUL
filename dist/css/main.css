@@ -212,7 +212,7 @@ a:hover::after, a:focus-visible::after, a:hover .link-label::after, a:focus-visi
 
 .home-page .brand-scroll {
   position: relative;
-  height: calc(100svh - 50px + 115svh);
+  height: calc(100svh - 50px + 155svh);
   margin-top: 150px;
 }
 .home-page .brand-scroll .home-intro {
