@@ -212,7 +212,7 @@ a:hover::after, a:focus-visible::after, a:hover .link-label::after, a:focus-visi
 
 .home-page .brand-scroll {
   position: relative;
-  height: calc(100svh - 50px + 155svh);
+  height: calc(100svh - 50px + 165svh);
   margin-top: 150px;
 }
 .home-page .brand-scroll .home-intro {
@@ -284,17 +284,17 @@ a:hover::after, a:focus-visible::after, a:hover .link-label::after, a:focus-visi
   opacity: 0;
   transform: translateY(22px);
   filter: blur(5px);
-  transition: opacity 1s ease, transform 1s cubic-bezier(.2, .65, .25, 1), filter 1s ease;
 }
 .has-js .home-page .brand-scroll.is-visible .intro-copy > * {
   opacity: 1;
   transform: translateY(0);
   filter: blur(0);
+  transition: opacity 1s ease, transform 1s cubic-bezier(.2, .65, .25, 1), filter 1s ease;
 }
-.home-page .intro-copy > :nth-child(2) { transition-delay: .12s; }
-.home-page .intro-copy > :nth-child(3) { transition-delay: .24s; }
-.home-page .intro-copy > :nth-child(4) { transition-delay: .36s; }
-.home-page .intro-copy > :nth-child(5) { transition-delay: .48s; }
+.home-page .brand-scroll.is-visible .intro-copy > :nth-child(2) { transition-delay: .12s; }
+.home-page .brand-scroll.is-visible .intro-copy > :nth-child(3) { transition-delay: .24s; }
+.home-page .brand-scroll.is-visible .intro-copy > :nth-child(4) { transition-delay: .36s; }
+.home-page .brand-scroll.is-visible .intro-copy > :nth-child(5) { transition-delay: .48s; }
 .home-page .text-link {
   font-family: "Pretendard", "Malgun Gothic", sans-serif;
   font-size: 15px;
@@ -320,6 +320,33 @@ a:hover::after, a:focus-visible::after, a:hover .link-label::after, a:focus-visi
   font: 600 clamp(13px, 1.388889vw, 20px)/1.369 "Pretendard", sans-serif;
   white-space: nowrap;
 }
+.has-js .home-page .brand-scroll .teaser {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(24px);
+}
+.has-js .home-page .brand-scroll.has-teasers .teaser {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition: opacity .9s ease, transform 1s cubic-bezier(.2, .65, .25, 1);
+}
+.home-page .brand-scroll.has-teasers .teaser:nth-child(2) { transition-delay: .28s; }
+.home-page .brand-scroll.has-teasers .teaser:nth-child(3) { transition-delay: .56s; }
+.has-js .home-page .brand-scroll .teaser .link-label {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.has-js .home-page .brand-scroll.has-teasers .teaser .link-label {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity .65s ease, transform .7s cubic-bezier(.2, .65, .25, 1);
+}
+.home-page .brand-scroll.has-teasers .teaser:nth-child(1) .link-label { transition-delay: .18s; }
+.home-page .brand-scroll.has-teasers .teaser:nth-child(2) .link-label { transition-delay: .46s; }
+.home-page .brand-scroll.has-teasers .teaser:nth-child(3) .link-label { transition-delay: .74s; }
 
 .home-page .home-scroll {
   height: 500svh;
@@ -728,5 +755,7 @@ a:hover::after, a:focus-visible::after, a:hover .link-label::after, a:focus-visi
 @media (prefers-reduced-motion: reduce) {
   .has-js .home-page .home-story .story-copy > * { clip-path: none; transition: none; }
   .has-js .home-page .brand-scroll .intro-copy > * { opacity: 1; transform: none; filter: none; transition: none; }
+  .has-js .home-page .brand-scroll .teaser,
+  .has-js .home-page .brand-scroll .teaser .link-label { opacity: 1; visibility: visible; pointer-events: auto; transform: none; transition: none; }
   .home-page .scroll-space-link { transition: none; transform: none; }
 }

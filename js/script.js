@@ -13,6 +13,8 @@ const brandScroll = document.querySelector("[data-brand-scroll]");
 const brandPanel = brandScroll?.querySelector(".home-intro");
 const brandViewport = brandScroll?.querySelector(".intro-photo");
 const brandPanImage = brandScroll?.querySelector(".brand-pan-image");
+const brandCopy = brandScroll?.querySelector(".intro-copy");
+const brandTeasers = brandScroll?.querySelector(".intro-links");
 const filterButtons = document.querySelectorAll("[data-filter]");
 const filterLinks = document.querySelectorAll("[data-filter-link]");
 const productCards = document.querySelectorAll(".product-card");
@@ -186,13 +188,28 @@ const requestLottieUpdate = () => {
 
 const updateBrandPan = () => {
     brandTicking = false;
-    if (!brandScroll || !brandPanImage || window.innerWidth <= 900 || prefersReducedMotion) return;
+    if (!brandScroll || !brandPanImage) return;
+    if (prefersReducedMotion) {
+        brandScroll.classList.add("is-visible", "has-teasers");
+        return;
+    }
+    if (window.innerWidth <= 900) {
+        const isInView = (element) => {
+            const rect = element.getBoundingClientRect();
+            return rect.top < window.innerHeight * 0.85;
+        };
+        if (brandCopy && isInView(brandCopy)) brandScroll.classList.add("is-visible");
+        if (brandTeasers && isInView(brandTeasers)) brandScroll.classList.add("has-teasers");
+        return;
+    }
     const scrollRange = Math.max(1, brandScroll.offsetHeight - brandPanel.offsetHeight);
-    const holdDistance = scrollRange * (20 / 155);
+    const holdDistance = scrollRange * (25 / 165);
     const panDistance = scrollRange - (holdDistance * 2);
     const stickyTop = parseFloat(window.getComputedStyle(brandPanel).top) || 50;
     const elapsed = stickyTop - brandScroll.getBoundingClientRect().top;
     const progress = Math.min(Math.max((elapsed - holdDistance) / panDistance, 0), 1);
+    if (elapsed >= 0) brandScroll.classList.add("is-visible");
+    if (elapsed >= holdDistance) brandScroll.classList.add("has-teasers");
     const imageTravel = Math.max(0, brandPanImage.offsetWidth - brandViewport.clientWidth);
     brandPanImage.style.setProperty("--brand-pan", `${-imageTravel * progress}px`);
     brandScroll.dataset.progress = progress.toFixed(3);
@@ -348,18 +365,6 @@ if ("IntersectionObserver" in window) {
 }
 
 const storySections = document.querySelectorAll(".home-story");
-if (brandPanel) {
-    if ("IntersectionObserver" in window && !prefersReducedMotion) {
-        const brandObserver = new IntersectionObserver((entries, observer) => {
-            if (!entries[0].isIntersecting) return;
-            brandScroll.classList.add("is-visible");
-            observer.disconnect();
-        }, { rootMargin: "0px 0px -10% 0px", threshold: 0.12 });
-        brandObserver.observe(brandPanel);
-    } else {
-        brandScroll.classList.add("is-visible");
-    }
-}
 if ("IntersectionObserver" in window && !prefersReducedMotion) {
     const storyObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach((entry) => {
