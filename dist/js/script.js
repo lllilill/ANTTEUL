@@ -27,7 +27,7 @@ const dialogClose = document.querySelector("[data-dialog-close]");
 const selectedProducts = new Set();
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const createFrameController = (player, canvas, initialFrame = 0) => {
+const createFrameController = (player, canvas, initialFrame = 0, onDraw = () => {}) => {
     let currentFrame = initialFrame;
     let targetFrame = initialFrame;
     let animationFrameId = 0;
@@ -38,6 +38,7 @@ const createFrameController = (player, canvas, initialFrame = 0) => {
         const renderedFrame = Math.round(frame);
         player.setFrame(renderedFrame);
         canvas.dataset.frame = String(renderedFrame);
+        onDraw(renderedFrame);
     };
 
     const animateTo = (frame, duration = 500) => {
@@ -102,9 +103,15 @@ const scrollLottie = scrollLottieCanvas ? new DotLottie({
 }) : null;
 
 const menuFrameController = createFrameController(menuLottie, menuLottieCanvas, 25);
-const scrollFrameController = scrollLottie ? createFrameController(scrollLottie, scrollLottieCanvas) : null;
+const syncScrollSpaceLink = () => {
+    if (!scrollLottieSection) return;
+    const progress = Number(scrollLottieSection.dataset.progress || 0);
+    const frame = Number(scrollLottieCanvas.dataset.frame || 0);
+    scrollLottieSection.classList.toggle("show-space-link", progress >= 0.711 && frame >= 79);
+};
+const scrollFrameController = scrollLottie ? createFrameController(scrollLottie, scrollLottieCanvas, 0, syncScrollSpaceLink) : null;
 const scrollLottieFrames = [0, 10, 20, 30, 40, 50, 80];
-const scrollLottieThresholds = [0, 0.08, 0.16, 0.24, 0.32, 0.4, 0.5];
+const scrollLottieThresholds = [0, 0.072, 0.171, 0.270, 0.369, 0.468, 0.630];
 let headerIsExpanded = window.scrollY <= 1;
 let menuLottieReady = false;
 let lastHeaderScrollY = window.scrollY;
@@ -165,7 +172,8 @@ const updateLottieFrames = () => {
 
     scrollLottieSection.dataset.progress = progress.toFixed(3);
     scrollLottieSection.dataset.stage = String(scrollLottieStage);
-    scrollLottieSection.classList.toggle("is-active", scrollLottieReady && nextStage > 0 && sectionTop < window.innerHeight && sectionTop + scrollLottieSection.offsetHeight > 0);
+    scrollLottieSection.classList.toggle("is-active", scrollLottieReady);
+    syncScrollSpaceLink();
     scrollTicking = false;
 };
 
@@ -335,18 +343,49 @@ if ("IntersectionObserver" in window) {
     revealItems.forEach((item) => item.classList.add("is-visible"));
 }
 
+const storySections = document.querySelectorAll(".home-story");
+if (brandPanel) {
+    if ("IntersectionObserver" in window && !prefersReducedMotion) {
+        const brandObserver = new IntersectionObserver((entries, observer) => {
+            if (!entries[0].isIntersecting) return;
+            brandScroll.classList.add("is-visible");
+            observer.disconnect();
+        }, { rootMargin: "0px 0px -10% 0px", threshold: 0.12 });
+        brandObserver.observe(brandPanel);
+    } else {
+        brandScroll.classList.add("is-visible");
+    }
+}
+if ("IntersectionObserver" in window && !prefersReducedMotion) {
+    const storyObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            entry.target.classList.add("is-visible");
+            observer.unobserve(entry.target);
+        });
+    }, { rootMargin: "0px 0px -12% 0px", threshold: 0.15 });
+    storySections.forEach((section) => storyObserver.observe(section));
+} else {
+    storySections.forEach((section) => section.classList.add("is-visible"));
+}
+
 const bannerVideo = document.querySelector('.hero-video');
 if (bannerVideo) {
+    const hero = bannerVideo.closest('.hero');
     const play = document.querySelector('[data-video-play]');
     const mute = document.querySelector('[data-video-mute]');
     const volume = document.querySelector('[data-video-volume]');
-    const volumeControl = volume.closest('.video-volume');
     const seek = document.querySelector('[data-video-progress]');
-    const setVolumeOpen = (open) => {
-        volumeControl.classList.toggle('is-open', open);
-        mute.setAttribute('aria-expanded', String(open));
-        mute.setAttribute('aria-label', open ? '음량 조절 닫기' : '음량 조절 열기');
-        volume.tabIndex = open ? 0 : -1;
+    let controlsTimer = 0;
+    let lastAudibleVolume = 1;
+    const showControls = () => {
+        hero.classList.add('has-controls-visible');
+        window.clearTimeout(controlsTimer);
+        controlsTimer = window.setTimeout(() => hero.classList.remove('has-controls-visible'), 3000);
+    };
+    const hideControls = () => {
+        window.clearTimeout(controlsTimer);
+        hero.classList.remove('has-controls-visible');
     };
     const syncPlayback = () => {
         play.setAttribute('aria-label', bannerVideo.paused ? '영상 재생' : '영상 일시정지');
@@ -355,6 +394,7 @@ if (bannerVideo) {
     const syncVolume = () => {
         const silent = bannerVideo.muted || bannerVideo.volume === 0;
         mute.setAttribute('aria-pressed', String(silent));
+        mute.setAttribute('aria-label', silent ? '영상 소리 켜기' : '영상 음소거');
         volume.value = silent ? 0 : bannerVideo.volume;
     };
     const syncProgress = () => {
@@ -366,20 +406,30 @@ if (bannerVideo) {
             seek.setAttribute('aria-valuetext', `${Math.floor(bannerVideo.currentTime)}초 / ${Math.floor(duration)}초`);
         }
     };
-    play.addEventListener('click', async () => {
+    const togglePlayback = async () => {
         if (!bannerVideo.paused) bannerVideo.pause();
         else { try { await bannerVideo.play(); } catch { syncPlayback(); } }
+    };
+    play.addEventListener('click', togglePlayback);
+    hero.addEventListener('click', event => {
+        if (!event.target.closest('.hero-controls')) togglePlayback();
     });
-    mute.addEventListener('click', () => setVolumeOpen(!volumeControl.classList.contains('is-open')));
+    hero.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') showControls(); });
+    hero.addEventListener('pointermove', event => { if (event.pointerType !== 'touch') showControls(); });
+    hero.addEventListener('pointerleave', hideControls);
+    mute.addEventListener('click', () => {
+        if (bannerVideo.muted || bannerVideo.volume === 0) {
+            if (bannerVideo.volume === 0) bannerVideo.volume = lastAudibleVolume;
+            bannerVideo.muted = false;
+        } else {
+            lastAudibleVolume = bannerVideo.volume;
+            bannerVideo.muted = true;
+        }
+    });
     volume.addEventListener('input', () => {
         bannerVideo.volume = Number(volume.value);
         bannerVideo.muted = bannerVideo.volume === 0;
-    });
-    volume.addEventListener('keydown', event => {
-        if (event.key === 'Escape') { setVolumeOpen(false); mute.focus(); }
-    });
-    document.addEventListener('pointerdown', event => {
-        if (!volumeControl.contains(event.target)) setVolumeOpen(false);
+        if (bannerVideo.volume > 0) lastAudibleVolume = bannerVideo.volume;
     });
     seek.addEventListener('input', () => {
         if (Number.isFinite(bannerVideo.duration)) bannerVideo.currentTime = Number(seek.value) / 100 * bannerVideo.duration;
@@ -388,7 +438,7 @@ if (bannerVideo) {
     ['play', 'pause', 'ended'].forEach(event => bannerVideo.addEventListener(event, syncPlayback));
     ['loadedmetadata', 'durationchange', 'timeupdate'].forEach(event => bannerVideo.addEventListener(event, syncProgress));
     bannerVideo.addEventListener('volumechange', syncVolume);
-    setVolumeOpen(false); syncPlayback(); syncVolume(); syncProgress();
+    syncPlayback(); syncVolume(); syncProgress();
 }
 
 const searchForm = document.querySelector('[data-search-form]');
@@ -488,7 +538,8 @@ if (track) {
         const bounds = track.getBoundingClientRect();
         const inView = bounds.bottom > 0 && bounds.top < window.innerHeight;
         const canAdvance = track.scrollLeft < maxScroll() - 1;
-        if (!prefersReducedMotion && canAdvance && inView && !carousel.matches(':hover') && !carousel.contains(document.activeElement) && !pointer && !document.hidden && time > navigationPauseUntil) {
+        const keyboardFocus = carousel.contains(document.activeElement) && document.activeElement.matches(':focus-visible');
+        if (!prefersReducedMotion && canAdvance && inView && !carousel.matches(':hover') && !keyboardFocus && !pointer && !document.hidden && time > navigationPauseUntil) {
             subpixel += elapsed * .023;
             const pixels = Math.floor(subpixel);
             if (pixels > 0) {
