@@ -447,7 +447,7 @@ a:hover::after, a:focus-visible::after, a:hover .link-label::after, a:focus-visi
 .home-page .bestsellers {
   position: relative;
   height: min(34.722222vw, 500px);
-  margin: 70px auto 0;
+  margin: 50px auto 0;
   padding: 0;
 }
 .home-page .bestsellers h2 {
@@ -536,10 +536,10 @@ a:hover::after, a:focus-visible::after, a:hover .link-label::after, a:focus-visi
 .home-footer {
   height: 400px;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  grid-template-rows: 320px 80px;
+  grid-template-rows: 300px 80px;
   gap: 0;
   margin: 50px auto 0;
-  padding: 0;
+  padding: 20px 0 0;
   background: #49362f;
   color: #c8b0b0;
   font: 400 12px/1.369 "Pretendard", sans-serif;
@@ -548,7 +548,7 @@ a:hover::after, a:focus-visible::after, a:hover .link-label::after, a:focus-visi
 .home-footer .footer-column {
   min-width: 0;
   width: auto;
-  height: 320px;
+  height: 300px;
   padding: 30px;
 }
 .home-footer .footer-logo img {
@@ -696,7 +696,7 @@ a:hover::after, a:focus-visible::after, a:hover .link-label::after, a:focus-visi
   .home-page .bestseller-track { padding: 0 80px; gap: 25px; }
   .home-page .carousel-arrow.previous { left: 20px; }
   .home-page .carousel-arrow.next { right: 20px; }
-  .home-footer { height: auto; grid-template-columns: repeat(3, 1fr); grid-template-rows: auto; padding: 20px 10px; }
+  .home-footer { height: auto; grid-template-columns: repeat(3, 1fr); grid-template-rows: auto; padding: 40px 10px 20px; }
   .home-footer .footer-logo,
   .home-footer .footer-column { height: auto; padding: 20px; }
   .home-footer .company-info { grid-row: auto; margin-top: 20px; }
@@ -739,7 +739,7 @@ a:hover::after, a:focus-visible::after, a:hover .link-label::after, a:focus-visi
   .home-page .carousel-arrow.previous { left: 4px; }
   .home-page .carousel-arrow.next { right: 4px; }
   .home-page .all-products { right: 20px; bottom: 8px; }
-  .home-footer { grid-template-columns: repeat(2, 1fr); margin-top: 70px; }
+  .home-footer { grid-template-columns: repeat(2, 1fr); margin-top: 50px; }
   .home-footer .footer-logo { grid-column: 1 / -1; }
   .home-footer .newsletter { grid-column: 1 / -1; }
   .home-footer .footer-column { padding: 16px 12px; }
